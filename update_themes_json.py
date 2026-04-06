@@ -35,7 +35,7 @@ def generate_themes_json(addons_dir: str) -> list:
             continue
 
         config = parse_ini(config_file)
-        if not config or config.get("addon_type") != "template":
+        if not config or config.get("addon_type") != "theme":
             continue
 
         names        = {}
@@ -64,7 +64,7 @@ def generate_themes_json(addons_dir: str) -> list:
 
         entries.append({
             "id":             addon_id,
-            "addon_type":     config.get("addon_type",     "template"),
+            "addon_type":     config.get("addon_type",     "theme"),
             "compatibility":  config.get("compatibility",  ""),
             "version":        config.get("version",        ""),
             "author":         config.get("author",         ""),
