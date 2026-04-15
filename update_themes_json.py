@@ -59,8 +59,8 @@ def generate_themes_json(addons_dir: str) -> list:
                 names[locale] = desc.get("name", "")
                 descriptions[locale] = desc.get("desc", "")
 
-        screenshots = parse_pictures(config.get("pictures", ""))
-        screenshots = [f for f in screenshots if os.path.basename(f) == "theme.webp"]
+        thumbnail = parse_pictures(config.get("pictures", ""))
+        thumbnail = [f for f in thumbnail if os.path.basename(f) == "theme.webp"]
 
         entries.append({
             "id": addon_id,
@@ -79,7 +79,7 @@ def generate_themes_json(addons_dir: str) -> list:
             "parent_theme": config.get("parent_theme", ""),
             "name": names,
             "description": descriptions,
-            "screenshots": screenshots,
+            "thumbnail": thumbnail,
         })
 
     entries.sort(key=lambda e: e["id"].lower())
