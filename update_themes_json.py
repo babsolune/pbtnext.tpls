@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Générateur de themes.json pour le serveur de téléchargement PHPBoost.
+themes.json generator
 """
 
 import json
@@ -12,7 +12,7 @@ import configparser
 
 def parse_ini(filepath: str) -> dict:
     parser = configparser.RawConfigParser()
-    parser.optionxform = str  # conserver la casse des clés
+    parser.optionxform = str
     try:
         with open(filepath, encoding="utf-8") as f:
             content = "[root]\n" + f.read()
@@ -20,6 +20,12 @@ def parse_ini(filepath: str) -> dict:
         return {k: v.strip('"') for k, v in dict(parser["root"]).items()}
     except Exception:
         return {}
+
+
+def parse_pictures(value: str) -> list:
+    if not value:
+        return []
+    return [item.strip().strip('"') for item in value.split(",") if item.strip().strip('"')]
 
 
 def generate_themes_json(addons_dir: str) -> list:
@@ -38,7 +44,7 @@ def generate_themes_json(addons_dir: str) -> list:
         if not config or config.get("addon_type") != "theme":
             continue
 
-        names        = {}
+        names = {}
         descriptions = {}
 
         lang_dir = os.path.join(addon_path, "lang")
@@ -50,37 +56,30 @@ def generate_themes_json(addons_dir: str) -> list:
                 desc = parse_ini(desc_file)
                 if not desc:
                     continue
-                names[locale]        = desc.get("name", "")
+                names[locale] = desc.get("name", "")
                 descriptions[locale] = desc.get("desc", "")
 
-        screenshots  = []
-        screens_dir  = os.path.join(addon_path, "screenshots")
-        if os.path.isdir(screens_dir):
-            for f in sorted(os.listdir(screens_dir)):
-                if re.search(r'\.(png|jpg|webp)$', f, re.IGNORECASE):
-                    screenshots.append(f"screenshots/{f}")
-
-        thumbnail = screenshots[0] if screenshots else ""
+        screenshots = parse_pictures(config.get("pictures", ""))
+        screenshots = [f for f in screenshots if os.path.basename(f) == "theme.webp"]
 
         entries.append({
-            "id":             addon_id,
-            "addon_type":     config.get("addon_type",     "theme"),
-            "compatibility":  config.get("compatibility",  ""),
-            "version":        config.get("version",        ""),
-            "author":         config.get("author",         ""),
-            "author_mail":    config.get("author_mail",    ""),
+            "id": addon_id,
+            "addon_type": config.get("addon_type", "theme"),
+            "compatibility": config.get("compatibility", ""),
+            "version": config.get("version", ""),
+            "author": config.get("author", ""),
+            "author_mail": config.get("author_mail", ""),
             "author_website": config.get("author_website", ""),
-            "creation_date":  config.get("creation_date",  ""),
-            "last_update":    config.get("last_update",    ""),
-            "html_version":   config.get("html_version",   ""),
-            "css_version":    config.get("css_version",    ""),
-            "main_color":     config.get("main_color",     ""),
-            "width":          config.get("width",          ""),
-            "parent_theme":   config.get("parent_theme",   ""),
-            "name":           names,
-            "description":    descriptions,
-            "thumbnail":      thumbnail,
-            "screenshots":    screenshots,
+            "creation_date": config.get("creation_date", ""),
+            "last_update": config.get("last_update", ""),
+            "html_version": config.get("html_version", ""),
+            "css_version": config.get("css_version", ""),
+            "main_color": config.get("main_color", ""),
+            "width": config.get("width", ""),
+            "parent_theme": config.get("parent_theme", ""),
+            "name": names,
+            "description": descriptions,
+            "screenshots": screenshots,
         })
 
     entries.sort(key=lambda e: e["id"].lower())
@@ -94,7 +93,7 @@ def main():
         print(f"Dossier '{addons_dir}' introuvable.", file=sys.stderr)
         sys.exit(1)
 
-    entries     = generate_themes_json(addons_dir)
+    entries = generate_themes_json(addons_dir)
     output_file = os.path.join(addons_dir, "themes.json")
 
     with open(output_file, "w", encoding="utf-8") as f:
